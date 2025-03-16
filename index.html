@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumber Cut Visualizer</title>
+  
+  <!-- Load React -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  
+  <!-- Load Babel for JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.2/babel.min.js"></script>
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.5;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    /* Utility classes similar to Tailwind */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .flex-row { flex-direction: row; }
+    .flex-wrap { flex-wrap: wrap; }
+    .w-full { width: 100%; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-4 { gap: 1rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-4 { padding: 1rem; }
+    .p-6 { padding: 1.5rem; }
+    .p-8 { padding: 2rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    .text-sm { font-size: 0.875rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .text-white { color: white; }
+    .text-gray-500 { color: #6b7280; }
+    .text-gray-600 { color: #4b5563; }
+    .bg-white { background-color: white; }
+    .bg-gray-50 { background-color: #f9fafb; }
+    .bg-gray-100 { background-color: #f3f4f6; }
+    .bg-blue-500 { background-color: #3b82f6; }
+    .bg-red-500 { background-color: #ef4444; }
+    .bg-green-500 { background-color: #10b981; }
+    .bg-yellow-500 { background-color: #f59e0b; }
+    .bg-indigo-500 { background-color: #6366f1; }
+    .hover\:bg-blue-600:hover { background-color: #2563eb; }
+    .hover\:bg-red-600:hover { background-color: #dc2626; }
+    .hover\:bg-green-600:hover { background-color: #059669; }
+    .hover\:bg-yellow-600:hover { background-color: #d97706; }
+    .hover\:bg-indigo-600:hover { background-color: #4f46e5; }
+    .border { border: 1px solid #e5e7eb; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .block { display: block; }
+    .inline-block { display: inline-block; }
+    .hidden { display: none; }
+    .overflow-x-auto { overflow-x: auto; }
+    .overflow-auto { overflow: auto; }
+    .fixed { position: fixed; }
+    .absolute { position: absolute; }
+    .relative { position: relative; }
+    .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+    .z-10 { z-index: 10; }
+    .z-50 { z-index: 50; }
+    
+    /* Responsive classes */
+    @media (min-width: 768px) {
+      .md\:flex-row { flex-direction: row; }
+      .md\:w-1\/3 { width: 33.333333%; }
+      .md\:w-2\/3 { width: 66.666667%; }
+    }
+    
+    /* Print styles */
+    @media print {
+      .no-print { display: none !important; }
+      body { background-color: white; }
+      .print-only { display: block !important; }
+      .container { max-width: 100%; padding: 0; margin: 0; }
+    }
+    
+    /* Custom styles */
+    button {
+      cursor: pointer;
+      border: none;
+    }
+    
+    input {
+      outline: none;
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .print-only {
+      display: none;
+    }
+    
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 0.5rem;
+      max-width: 800px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .delete-btn {
+      background-color: #ef4444;
+      color: white;
+      border-radius: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+    
+    .delete-btn:hover {
+      background-color: #dc2626;
+    }
+
+    .copy-url-btn {
+      background-color: #6366f1;
+      color: white;
+      border-radius: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+    
+    .copy-url-btn:hover {
+      background-color: #4f46e5;
+    }
+
+    .url-input {
+      width: 100%;
+      font-family: monospace;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.25rem;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="container"></div>
+  
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+    
+    const LumberCutVisualizer = () => {
+      // Default board dimensions (in inches)
+      const DEFAULT_BOARD_LENGTH = 96; // 8 feet
+      const DEFAULT_BOARD_WIDTH = 3.5; // Actual width of 2x4 on edge
+      const DEFAULT_BOARD_THICKNESS = 1.5; // Actual thickness of 2x4
+      
+      // State for board dimensions
+      const [boardLengthInches, setBoardLengthInches] = useState(DEFAULT_BOARD_LENGTH);
+      const [boardWidthInches, setBoardWidthInches] = useState(DEFAULT_BOARD_WIDTH);
+      const [boardThicknessInches, setBoardThicknessInches] = useState(DEFAULT_BOARD_THICKNESS);
+      
+      // Derived constants based on board dimensions
+      const SCALE = 20; // Pixels per inch
+      const BOARD_LENGTH = boardLengthInches * SCALE;
+      const BOARD_WIDTH = boardWidthInches * SCALE;
+      const BOARD_THICKNESS = boardThicknessInches * SCALE;
+      
+      const MARGIN = 40; // Margin around the SVG
+      const PADDING = 30; // Extra padding around cuts for zoom view
+      const boardRef = useRef(null);
+      const printBoardRef = useRef(null);
+      const urlInputRef = useRef(null);
+
+      // State for storing cuts
+      const [cuts, setCuts] = useState([]);
+      const [startX, setStartX] = useState({ feet: 0, inches: 0, sixteenths: 0 });
+      const [startY, setStartY] = useState({ feet: 0, inches: 0, sixteenths: 0 });
+      const [angle, setAngle] = useState(90);
+      const [showMeasurements, setShowMeasurements] = useState(true);
+      const [showPrintView, setShowPrintView] = useState(false);
+      const [urlCopied, setUrlCopied] = useState(false);
+      const [autoOpenPrint, setAutoOpenPrint] = useState(false);
+      
+      // Initial visible board section (in inches)
+      const DEFAULT_VISIBLE_LENGTH = 24; // Show 2 feet initially
+      
+      // Parse URL parameters on component mount
+      useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Check for board dimensions in URL
+        const boardLength = parseFloat(urlParams.get('length'));
+        const boardWidth = parseFloat(urlParams.get('width'));
+        const boardThickness = parseFloat(urlParams.get('thickness'));
+        
+        // Set board dimensions if valid
+        if (!isNaN(boardLength) && boardLength > 0) {
+          setBoardLengthInches(boardLength);
+        }
+        if (!isNaN(boardWidth) && boardWidth > 0) {
+          setBoardWidthInches(boardWidth);
+        }
+        if (!isNaN(boardThickness) && boardThickness > 0) {
+          setBoardThicknessInches(boardThickness);
+        }
+        
+        // Check if there are cut parameters
+        const cutParams = urlParams.getAll('cut');
+        if (cutParams.length > 0) {
+          const urlCuts = [];
+          
+          cutParams.forEach(cutParam => {
+            // Format: startX,startY,angle (all in decimal)
+            const [startXInches, startYInches, cutAngle] = cutParam.split(',').map(val => parseFloat(val));
+            
+            if (!isNaN(startXInches) && !isNaN(startYInches) && !isNaN(cutAngle)) {
+              // Set the calculated board dimensions first before validating
+              const maxBoardLength = boardLength > 0 ? boardLength : DEFAULT_BOARD_LENGTH;
+              const maxBoardWidth = boardWidth > 0 ? boardWidth : DEFAULT_BOARD_WIDTH;
+              
+              // Validate values with the current board dimensions
+              if (startXInches >= 0 && startXInches <= maxBoardLength &&
+                  startYInches >= 0 && startYInches <= maxBoardWidth &&
+                  cutAngle >= 0 && cutAngle <= 180) {
+                
+                // Calculate the cut endpoint based on the board dimensions
+                const cutPosition = calculateCutEndpoint(
+                  startXInches, 
+                  startYInches, 
+                  cutAngle, 
+                  maxBoardLength, 
+                  maxBoardWidth
+                );
+                urlCuts.push(cutPosition);
+              }
+            }
+          });
+          
+          // Set the cuts from URL parameters
+          if (urlCuts.length > 0) {
+            setCuts(urlCuts);
+          }
+        }
+        
+        // Check if print=true parameter is set
+        if (urlParams.get('print') === 'true') {
+          setAutoOpenPrint(true);
+        }
+      }, []);
+      
+      // Auto-open print view if specified in URL
+      useEffect(() => {
+        if (autoOpenPrint) {
+          openPrintView();
+          setAutoOpenPrint(false);
+        }
+      }, [autoOpenPrint]);
+      
+      // FIS (Foot-Inch-Sixteenth) conversion helpers
+      const inchesToFIS = (inches) => {
+        const feet = Math.floor(inches / 12);
+        const remainingInches = inches - (feet * 12);
+        const wholeInches = Math.floor(remainingInches);
+        const fractionInches = remainingInches - wholeInches;
+        const sixteenths = Math.round(fractionInches * 16);
+        
+        // Handle case where sixteenths rounds to 16
+        let normalizedSixteenths = sixteenths;
+        let normalizedInches = wholeInches;
+        let normalizedFeet = feet;
+        
+        if (normalizedSixteenths === 16) {
+          normalizedSixteenths = 0;
+          normalizedInches += 1;
+        }
+        
+        if (normalizedInches === 12) {
+          normalizedInches = 0;
+          normalizedFeet += 1;
+        }
+        
+        return { 
+          feet: normalizedFeet, 
+          inches: normalizedInches, 
+          sixteenths: normalizedSixteenths 
+        };
+      };
+      
+      const fisToInches = (fis) => {
+        return (fis.feet * 12) + fis.inches + (fis.sixteenths / 16);
+      };
+      
+      const formatFIS = (fis) => {
+        return `${fis.feet}-${fis.inches}-${fis.sixteenths}`;
+      };
+      
+      // Parse FIS input from user
+      const handleFISInput = (value, setter) => {
+        // Split by hyphens or spaces
+        const parts = value.split(/[-\s]+/);
+        
+        const newFIS = { 
+          feet: parseInt(parts[0]) || 0,
+          inches: parseInt(parts[1]) || 0,
+          sixteenths: parseInt(parts[2]) || 0
+        };
+        
+        // Validate and normalize values
+        if (newFIS.sixteenths >= 16) {
+          newFIS.inches += Math.floor(newFIS.sixteenths / 16);
+          newFIS.sixteenths %= 16;
+        }
+        
+        if (newFIS.inches >= 12) {
+          newFIS.feet += Math.floor(newFIS.inches / 12);
+          newFIS.inches %= 12;
+        }
+        
+        setter(newFIS);
+      };
+      
+      // Handle board dimension changes
+      const handleBoardDimensionChange = (value, setter) => {
+        // Convert to number and ensure it's positive
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue) && numValue > 0) {
+          setter(numValue);
+        }
+      };
+      
+      // Calculate where a cut will intersect with the board edges
+      const calculateCutEndpoint = (startXInches, startYInches, angle, maxLength = boardLengthInches, maxWidth = boardWidthInches) => {
+        // Convert angle to radians
+        const radians = (angle * Math.PI) / 180;
+        
+        // Initialize end point coordinates
+        let endXInches, endYInches;
+        
+        // For vertical cuts (90 degrees)
+        if (angle === 90) {
+          return {
+            x: startXInches,
+            y: startYInches,
+            endX: startXInches,
+            endY: maxWidth,
+            startXInches,
+            startYInches,
+            endXInches: startXInches,
+            endYInches: maxWidth,
+            angle
+          };
+        }
+        
+        // For horizontal cuts (0 or 180 degrees)
+        if (angle === 0) {
+          return {
+            x: startXInches,
+            y: startYInches,
+            endX: maxLength,
+            endY: startYInches,
+            startXInches,
+            startYInches,
+            endXInches: maxLength,
+            endYInches: startYInches,
+            angle
+          };
+        }
+        
+        if (angle === 180) {
+          return {
+            x: startXInches,
+            y: startYInches,
+            endX: 0,
+            endY: startYInches,
+            startXInches,
+            startYInches,
+            endXInches: 0,
+            endYInches: startYInches,
+            angle
+          };
+        }
+        
+        // For angled cuts, we need to check which edge the cut intersects first
+        
+        // Calculate potential intersections with all four edges
+        // Top edge (y = maxWidth)
+        const topDeltaX = (maxWidth - startYInches) / Math.tan(radians);
+        const topX = startXInches + topDeltaX;
+        
+        // Bottom edge (y = 0)
+        const bottomDeltaX = -startYInches / Math.tan(radians);
+        const bottomX = startXInches + bottomDeltaX;
+        
+        // Right edge (x = maxLength)
+        const rightDeltaY = (maxLength - startXInches) * Math.tan(radians);
+        const rightY = startYInches + rightDeltaY;
+        
+        // Left edge (x = 0)
+        const leftDeltaY = -startXInches * Math.tan(radians);
+        const leftY = startYInches + leftDeltaY;
+        
+        // Determine which intersection point is valid and comes first
+        // Check if the cut intersects the top edge
+        if (topX >= 0 && topX <= maxLength && angle < 180 && angle > 0) {
+          endXInches = topX;
+          endYInches = maxWidth;
+        }
+        // Check if the cut intersects the bottom edge
+        else if (bottomX >= 0 && bottomX <= maxLength && (angle > 180 || angle < 0)) {
+          endXInches = bottomX;
+          endYInches = 0;
+        }
+        // Check if the cut intersects the right edge
+        else if (rightY >= 0 && rightY <= maxWidth && ((angle < 90 && angle > 0) || (angle > 270 && angle < 360))) {
+          endXInches = maxLength;
+          endYInches = rightY;
+        }
+        // Check if the cut intersects the left edge
+        else if (leftY >= 0 && leftY <= maxWidth && (angle > 90 && angle < 270)) {
+          endXInches = 0;
+          endYInches = leftY;
+        }
+        // If no valid intersection, default to board corner (shouldn't happen with valid inputs)
+        else {
+          endXInches = maxLength;
+          endYInches = maxWidth;
+        }
+        
+        return {
+          x: startXInches,
+          y: startYInches,
+          endX: endXInches,
+          endY: endYInches,
+          startXInches,
+          startYInches,
+          endXInches,
+          endYInches,
+          angle
+        };
+      };
+      
+      // Add a new cut
+      const addCut = () => {
+        const startXInches = fisToInches(startX);
+        const startYInches = fisToInches(startY);
+        
+        // Validate that the start point is within board bounds
+        if (startXInches < 0 || startXInches > boardLengthInches) {
+          alert('Start X position must be within the board length!');
+          return;
+        }
+        
+        if (startYInches < 0 || startYInches > boardWidthInches) {
+          alert('Start Y position must be within the board width!');
+          return;
+        }
+        
+        // Calculate where the cut ends
+        const cutPosition = calculateCutEndpoint(startXInches, startYInches, angle);
+        setCuts([...cuts, cutPosition]);
+      };
+      
+      // Remove a specific cut by index
+      const removeCut = (indexToRemove) => {
+        setCuts(cuts.filter((_, index) => index !== indexToRemove));
+      };
+      
+      // Clear all cuts
+      const clearCuts = () => {
+        setCuts([]);
+      };
+      
+      // Show the print view modal
+      const openPrintView = () => {
+        setShowPrintView(true);
+      };
+      
+      // Close the print view modal
+      const closePrintView = () => {
+        setShowPrintView(false);
+      };
+      
+      // Print the current view
+      const printPDF = () => {
+        window.print();
+      };
+      
+      // Generate URL for current cuts and board dimensions
+      const generateCutURL = (includePrint = false) => {
+        const baseUrl = window.location.origin + window.location.pathname;
+        let url = baseUrl + '?';
+        
+        // Add board dimensions
+        url += `length=${boardLengthInches}&width=${boardWidthInches}&thickness=${boardThicknessInches}`;
+        
+        // Add cut parameters
+        cuts.forEach((cut, index) => {
+          url += '&';
+          // Format: cut=startX,startY,angle (all in decimal)
+          url += `cut=${cut.startXInches.toFixed(3)},${cut.startYInches.toFixed(3)},${cut.angle}`;
+        });
+        
+        // Add print parameter if requested
+        if (includePrint && cuts.length > 0) {
+          url += '&print=true';
+        }
+        
+        return url;
+      };
+      
+      // Copy URL to clipboard
+      const copyURLToClipboard = (includePrint = false) => {
+        const url = generateCutURL(includePrint);
+        
+        // Update URL input field
+        if (urlInputRef.current) {
+          urlInputRef.current.value = url;
+          urlInputRef.current.select();
+          document.execCommand('copy');
+        }
+        
+        // Show copied confirmation
+        setUrlCopied(true);
+        setTimeout(() => {
+          setUrlCopied(false);
+        }, 2000);
+      };
+      
+      // Generate URL for a single cut
+      const generateSingleCutURL = (cut) => {
+        const baseUrl = window.location.origin + window.location.pathname;
+        return `${baseUrl}?length=${boardLengthInches}&width=${boardWidthInches}&thickness=${boardThicknessInches}&cut=${cut.startXInches.toFixed(3)},${cut.startYInches.toFixed(3)},${cut.angle}`;
+      };
+      
+      // Copy single cut URL to clipboard
+      const copySingleCutURL = (cut) => {
+        const url = generateSingleCutURL(cut);
+        
+        // Update URL input field
+        if (urlInputRef.current) {
+          urlInputRef.current.value = url;
+          urlInputRef.current.select();
+          document.execCommand('copy');
+        }
+        
+        // Show copied confirmation
+        setUrlCopied(true);
+        setTimeout(() => {
+          setUrlCopied(false);
+        }, 2000);
+      };
+      
+      // Calculate the bounding box for all cuts
+      const calculateVisibleBoardSection = () => {
+        if (cuts.length === 0) {
+          // Return default visible section if no cuts
+          return {
+            minX: 0,
+            maxX: Math.min(DEFAULT_VISIBLE_LENGTH, boardLengthInches),
+            minY: 0,
+            maxY: boardWidthInches,
+            visibleLength: Math.min(DEFAULT_VISIBLE_LENGTH, boardLengthInches)
+          };
+        }
+        
+        // Find min and max coordinates of all cut points
+        let minX = boardLengthInches;
+        let maxX = 0;
+        
+        cuts.forEach(cut => {
+          // Check start point
+          minX = Math.min(minX, cut.startXInches);
+          maxX = Math.max(maxX, cut.startXInches);
+          
+          // Check end point
+          minX = Math.min(minX, cut.endXInches);
+          maxX = Math.max(maxX, cut.endXInches);
+        });
+        
+        // Add some padding for better visibility
+        const paddingInches = 2; // 2 inches padding
+        minX = Math.max(0, minX - paddingInches);
+        maxX = Math.min(boardLengthInches, maxX + paddingInches);
+        
+        // Ensure we show at least DEFAULT_VISIBLE_LENGTH inches
+        if (maxX - minX < DEFAULT_VISIBLE_LENGTH) {
+          maxX = Math.min(boardLengthInches, minX + DEFAULT_VISIBLE_LENGTH);
+        }
+        
+        // Calculate visible length
+        const visibleLength = maxX - minX;
+        
+        return {
+          minX,
+          maxX,
+          minY: 0,
+          maxY: boardWidthInches,
+          visibleLength
+        };
+      };
+      
+      // Get board dimensions in FIS format
+      const getBoardDimensionsFIS = () => {
+        const lengthFIS = formatFIS(inchesToFIS(boardLengthInches));
+        const widthFIS = formatFIS(inchesToFIS(boardWidthInches));
+        const thicknessFIS = formatFIS(inchesToFIS(boardThicknessInches));
+        
+        return { lengthFIS, widthFIS, thicknessFIS };
+      };
+      
+      // Board visualization component for both main view and print view
+      const BoardVisualization = ({ forPrint = false, ref = null }) => {
+        // Calculate visible board section
+        const visibleSection = calculateVisibleBoardSection();
+        
+        // Calculate SVG dimensions
+        const visibleLength = visibleSection.visibleLength * SCALE;
+        const svgWidth = visibleLength + MARGIN * 2;
+        const svgHeight = BOARD_WIDTH * 1.5 + MARGIN * 2; // Extra space for measurements
+        
+        // Convert Y coordinates for display (invert Y axis so 0 is at the bottom)
+        const convertY = (yInches) => {
+          // Invert Y coordinate (0 at bottom, BOARD_WIDTH at top)
+          return MARGIN + BOARD_WIDTH - yInches * SCALE;
+        };
+        
+        return (
+          <div className="relative">
+            <svg
+              ref={ref}
+              width={svgWidth}
+              height={svgHeight}
+              viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+              style={{border: "1px solid #ccc", backgroundColor: "#fff"}}
+            >
+              {/* X axis label */}
+              <text x={MARGIN + visibleLength / 2} y={MARGIN / 2 - 5} textAnchor="middle" fontSize="12">
+                X Axis (Length)
+              </text>
+              
+              {/* X-axis ruler markings */}
+              {Array.from({ length: Math.ceil(boardLengthInches / 12) + 1 }).map((_, i) => {
+                const xPos = (i * 12 - visibleSection.minX) * SCALE;
+                if (xPos >= 0 && xPos <= visibleLength) {
+                  return (
+                    <g key={`ruler-x-ft-${i}`}>
+                      <line
+                        x1={xPos + MARGIN}
+                        y1={MARGIN + BOARD_WIDTH + 5}
+                        x2={xPos + MARGIN}
+                        y2={MARGIN + BOARD_WIDTH + 15}
+                        stroke="black"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x={xPos + MARGIN}
+                        y={MARGIN + BOARD_WIDTH + 30}
+                        textAnchor="middle"
+                        fontSize="10"
+                      >
+                        {i}'
+                      </text>
+                    </g>
+                  );
+                }
+                return null;
+              })}
+              
+              {/* Y-axis ruler markings */}
+              {Array.from({ length: Math.floor(boardWidthInches) + 1 }).map((_, i) => (
+                <g key={`ruler-y-${i}`}>
+                  <line
+                    x1={MARGIN - 15}
+                    y1={MARGIN + BOARD_WIDTH - i * SCALE}
+                    x2={MARGIN - 5}
+                    y2={MARGIN + BOARD_WIDTH - i * SCALE}
+                    stroke="black"
+                    strokeWidth="1.5"
+                  />
+                  <text
+                    x={MARGIN - 20}
+                    y={MARGIN + BOARD_WIDTH - i * SCALE + 4}
+                    textAnchor="end"
+                    fontSize="10"
+                  >
+                    {i}"
+                  </text>
+                </g>
+              ))}
+              
+              {/* Visible board section */}
+              <rect
+                x={MARGIN}
+                y={MARGIN}
+                width={visibleLength}
+                height={BOARD_WIDTH}
+                fill="#d4a76a"
+                stroke="#8b5a2b"
+                strokeWidth="1"
+              />
+              
+              {/* Origin marker at bottom-left corner */}
+              <circle
+                cx={MARGIN}
+                cy={MARGIN + BOARD_WIDTH}
+                r="3"
+                fill="black"
+              />
+              <text
+                x={MARGIN + 10}
+                y={MARGIN + BOARD_WIDTH - 5}
+                fontSize="10"
+                fill="black"
+              >
+                (0,0)
+              </text>
+              
+              {/* Cuts and their measurements */}
+              {cuts.map((cut, index) => {
+                // Check if cut is at least partially visible in the current view
+                const isStartVisible = cut.startXInches >= visibleSection.minX && cut.startXInches <= visibleSection.maxX;
+                const isEndVisible = cut.endXInches >= visibleSection.minX && cut.endXInches <= visibleSection.maxX;
+                
+                if (!isStartVisible && !isEndVisible) {
+                  // Skip if cut is completely outside the view
+                  return null;
+                }
+                
+                const startXFIS = formatFIS(inchesToFIS(cut.startXInches));
+                const startYFIS = formatFIS(inchesToFIS(cut.startYInches));
+                const endXFIS = formatFIS(inchesToFIS(cut.endXInches));
+                const endYFIS = formatFIS(inchesToFIS(cut.endYInches));
+                
+                // Calculate SVG coordinates with offset for visible section and inverted Y axis
+                const startX = (cut.startXInches - visibleSection.minX) * SCALE + MARGIN;
+                const startY = MARGIN + BOARD_WIDTH - cut.startYInches * SCALE;
+                const endX = (cut.endXInches - visibleSection.minX) * SCALE + MARGIN;
+                const endY = MARGIN + BOARD_WIDTH - cut.endYInches * SCALE;
+                
+                return (
+                  <g key={`cut-group-${index}`}>
+                    {/* The cut line */}
+                    <line
+                      key={`cut-${index}`}
+                      x1={startX}
+                      y1={startY}
+                      x2={endX}
+                      y2={endY}
+                      stroke="red"
+                      strokeWidth="2"
+                      strokeDasharray="4,2"
+                    />
+                    
+                    {/* Start point marker - only if in visible range */}
+                    {isStartVisible && (
+                      <>
+                        <circle
+                          cx={startX}
+                          cy={startY}
+                          r="3"
+                          fill="blue"
+                        />
+                        
+                        {/* Cut number label */}
+                        <text
+                          x={startX - 5}
+                          y={startY - 10}
+                          fontSize="10"
+                          fill="red"
+                          fontWeight="bold"
+                        >
+                          {index + 1}
+                        </text>
+                        
+                        {/* Coordinates for start point */}
+                        {(showMeasurements || forPrint) && (
+                          <>
+                            <text
+                              x={startX + 5}
+                              y={startY - 10}
+                              textAnchor="start"
+                              fontSize="9"
+                              fill="blue"
+                            >
+                              ({cut.startXInches.toFixed(2)}, {cut.startYInches.toFixed(2)})
+                            </text>
+                            
+                            {/* FIS format for start point */}
+                            <text
+                              x={startX + 5}
+                              y={startY}
+                              textAnchor="start"
+                              fontSize="9"
+                              fill="blue"
+                            >
+                              {startXFIS}, {startYFIS}
+                            </text>
+                          </>
+                        )}
+                      </>
+                    )}
+                    
+                    {/* End point marker - only if in visible range */}
+                    {isEndVisible && (
+                      <>
+                        <circle
+                          cx={endX}
+                          cy={endY}
+                          r="3"
+                          fill="green"
+                        />
+                        
+                        {/* Coordinates for end point */}
+                        {(showMeasurements || forPrint) && (
+                          <>
+                            <text
+                              x={endX + 5}
+                              y={endY - 10}
+                              textAnchor="start"
+                              fontSize="9"
+                              fill="green"
+                            >
+                              ({cut.endXInches.toFixed(2)}, {cut.endYInches.toFixed(2)})
+                            </text>
+                            
+                            {/* FIS format for end point */}
+                            <text
+                              x={endX + 5}
+                              y={endY}
+                              textAnchor="start"
+                              fontSize="9"
+                              fill="green"
+                            >
+                              {endXFIS}, {endYFIS}
+                            </text>
+                          </>
+                        )}
+                      </>
+                    )}
+                    
+                    {/* Angle label near the middle of the cut */}
+                    {(showMeasurements || forPrint) && (
+                      <text
+                        x={(startX + endX) / 2}
+                        y={(startY + endY) / 2 - 5}
+                        textAnchor="middle"
+                        fontSize="9"
+                        fill="red"
+                      >
+                        {cut.angle}°
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        );
+      };
+      
+      // Print View Modal Component
+      const PrintViewModal = () => {
+        if (!showPrintView) return null;
+        
+        const { lengthFIS, widthFIS, thicknessFIS } = getBoardDimensionsFIS();
+        
+        return (
+          <div className="fixed inset-0 flex items-center justify-center z-50 modal-backdrop no-print">
+            <div className="modal-content p-6 shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Print Preview</h2>
+                <button 
+                  onClick={closePrintView}
+                  className="px-2 py-1 bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="print-content">
+                <h1 className="text-2xl font-bold text-center mb-4">Lumber Cut Plan</h1>
+                
+                <div className="board-info mb-4">
+                  <div className="font-bold mb-2">Board Dimensions:</div>
+                  <div>Width: {boardWidthInches.toFixed(2)} inches ({widthFIS})</div>
+                  <div>Thickness: {boardThicknessInches.toFixed(2)} inches ({thicknessFIS})</div>
+                  <div>Length: {boardLengthInches.toFixed(2)} inches / {(boardLengthInches / 12).toFixed(1)} feet ({lengthFIS})</div>
+                </div>
+                
+                <div className="overflow-x-auto mb-6">
+                  <BoardVisualization forPrint={true} ref={printBoardRef} />
+                </div>
+                
+                <h2 className="text-xl font-bold mb-2">Cut List:</h2>
+                <table className="w-full border-collapse mb-6">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border p-2 text-left">Cut #</th>
+                      <th className="border p-2 text-left">Start X (FIS)</th>
+                      <th className="border p-2 text-left">Start Y (FIS)</th>
+                      <th className="border p-2 text-left">End X (FIS)</th>
+                      <th className="border p-2 text-left">End Y (FIS)</th>
+                      <th className="border p-2 text-left">Angle</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cuts.map((cut, index) => {
+                      const startXFIS = formatFIS(inchesToFIS(cut.startXInches));
+                      const startYFIS = formatFIS(inchesToFIS(cut.startYInches));
+                      const endXFIS = formatFIS(inchesToFIS(cut.endXInches));
+                      const endYFIS = formatFIS(inchesToFIS(cut.endYInches));
+                      return (
+                        <tr key={`print-cut-row-${index}`}>
+                          <td className="border p-2">{index + 1}</td>
+                          <td className="border p-2">{startXFIS}</td>
+                          <td className="border p-2">{startYFIS}</td>
+                          <td className="border p-2">{endXFIS}</td>
+                          <td className="border p-2">{endYFIS}</td>
+                          <td className="border p-2">{cut.angle}°</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                
+                <div className="flex justify-center mb-6">
+                  <button
+                    onClick={printPDF}
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    Print PDF
+                  </button>
+                </div>
+                
+                <div className="mb-4">
+                  <h3 className="font-bold mb-1">Share this cut plan:</h3>
+                  <p className="text-sm text-gray-600 mb-2">Copy this URL to share or bookmark this exact cut plan:</p>
+                  <input
+                    type="text"
+                    readOnly
+                    className="url-input"
+                    ref={urlInputRef}
+                    value={generateCutURL(true)}
+                    onClick={(e) => e.target.select()}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+      
+      // Print-only content that will only be visible when printing
+      const PrintOnlyContent = () => {
+        const { lengthFIS, widthFIS, thicknessFIS } = getBoardDimensionsFIS();
+        
+        return (
+          <div className="print-only">
+            <h1 className="text-2xl font-bold text-center mb-4">Lumber Cut Plan</h1>
+            
+            <div className="board-info mb-4">
+              <div className="font-bold mb-2">Board Dimensions:</div>
+              <div>Width: {boardWidthInches.toFixed(2)} inches ({widthFIS})</div>
+              <div>Thickness: {boardThicknessInches.toFixed(2)} inches ({thicknessFIS})</div>
+              <div>Length: {boardLengthInches.toFixed(2)} inches / {(boardLengthInches / 12).toFixed(1)} feet ({lengthFIS})</div>
+            </div>
+            
+            <div className="overflow-x-auto mb-6">
+              <BoardVisualization forPrint={true} />
+            </div>
+            
+            <h2 className="text-xl font-bold mb-2">Cut List:</h2>
+            <table className="w-full border-collapse mb-6">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-2 text-left">Cut #</th>
+                  <th className="border p-2 text-left">Start X (FIS)</th>
+                  <th className="border p-2 text-left">Start Y (FIS)</th>
+                  <th className="border p-2 text-left">End X (FIS)</th>
+                  <th className="border p-2 text-left">End Y (FIS)</th>
+                  <th className="border p-2 text-left">Angle</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cuts.map((cut, index) => {
+                  const startXFIS = formatFIS(inchesToFIS(cut.startXInches));
+                  const startYFIS = formatFIS(inchesToFIS(cut.startYInches));
+                  const endXFIS = formatFIS(inchesToFIS(cut.endXInches));
+                  const endYFIS = formatFIS(inchesToFIS(cut.endYInches));
+                  return (
+                    <tr key={`print-only-cut-row-${index}`}>
+                      <td className="border p-2">{index + 1}</td>
+                      <td className="border p-2">{startXFIS}</td>
+                      <td className="border p-2">{startYFIS}</td>
+                      <td className="border p-2">{endXFIS}</td>
+                      <td className="border p-2">{endYFIS}</td>
+                      <td className="border p-2">{cut.angle}°</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      };
+      
+      return (
+        <>
+          <div className="flex flex-col items-center w-full p-4 bg-gray-50 rounded-lg no-print">
+            <h1 className="text-xl font-bold mb-4">Lumber Cut Visualizer</h1>
+            
+            <div className="flex flex-col md:flex-row w-full gap-4 mb-4">
+              <div className="flex flex-col p-4 bg-white rounded shadow-md w-full md:w-1/3">
+                <h2 className="text-lg font-semibold mb-2">Board Dimensions</h2>
+                <div className="form-grid-3 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Length (inches):</label>
+                    <input
+                      type="number"
+                      value={boardLengthInches}
+                      onChange={(e) => handleBoardDimensionChange(e.target.value, setBoardLengthInches)}
+                      className="w-full px-3 py-2 border rounded"
+                      min="1"
+                      step="0.125"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Width (inches):</label>
+                    <input
+                      type="number"
+                      value={boardWidthInches}
+                      onChange={(e) => handleBoardDimensionChange(e.target.value, setBoardWidthInches)}
+                      className="w-full px-3 py-2 border rounded"
+                      min="0.5"
+                      step="0.125"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Thickness (inches):</label>
+                    <input
+                      type="number"
+                      value={boardThicknessInches}
+                      onChange={(e) => handleBoardDimensionChange(e.target.value, setBoardThicknessInches)}
+                      className="w-full px-3 py-2 border rounded"
+                      min="0.25"
+                      step="0.125"
+                    />
+                  </div>
+                </div>
+                
+                <h2 className="text-lg font-semibold mb-2">Cut Specifications</h2>
+                <p className="text-xs text-gray-500 mb-2">Format: feet-inches-sixteenths (e.g., 0-1-8 = 1½ inches)</p>
+                
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1">
+                    Start X Location:
+                  </label>
+                  <input
+                    type="text"
+                    value={`${startX.feet}-${startX.inches}-${startX.sixteenths}`}
+                    onChange={(e) => handleFISInput(e.target.value, setStartX)}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="0-0-0"
+                  />
+                </div>
+                
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1">
+                    Start Y Location:
+                  </label>
+                  <input
+                    type="text"
+                    value={`${startY.feet}-${startY.inches}-${startY.sixteenths}`}
+                    onChange={(e) => handleFISInput(e.target.value, setStartY)}
+                    className="w-full px-3 py-2 border rounded"
+                    placeholder="0-0-0"
+                  />
+                </div>
+                
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1">
+                    Angle (degrees, 90° = vertical):
+                  </label>
+                  <input
+                    type="number"
+                    value={angle}
+                    onChange={(e) => setAngle(parseFloat(e.target.value))}
+                    className="w-full px-3 py-2 border rounded"
+                    step="1"
+                    min="0"
+                    max="180"
+                  />
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={addCut}
+                    className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Add Cut
+                  </button>
+                  <button
+                    onClick={clearCuts}
+                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Clear All Cuts
+                  </button>
+                  <button
+                    onClick={openPrintView}
+                    className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    Print PDF
+                  </button>
+                </div>
+                
+                {cuts.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium mb-1">Share Current Cuts</h3>
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => copyURLToClipboard(false)}
+                        className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                      >
+                        {urlCopied ? 'Copied!' : 'Copy URL'} 
+                      </button>
+                      <button
+                        onClick={() => copyURLToClipboard(true)}
+                        className="px-3 py-2 ml-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                      >
+                        Copy Print URL
+                      </button>
+                    </div>
+                    <div className="mt-2">
+                      <input 
+                        type="text" 
+                        readOnly
+                        ref={urlInputRef}
+                        className="url-input" 
+                        placeholder="Generated URL will appear here"
+                        onClick={(e) => e.target.select()}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="bg-white rounded shadow-md p-4 w-full md:w-2/3 overflow-auto">
+                <h2 className="text-lg font-semibold mb-2">Board Visualization</h2>
+                <div className="text-sm text-gray-600 mb-2">
+                  <div><strong>Dimensions:</strong></div>
+                  <div>Width: {boardWidthInches.toFixed(2)} inches ({getBoardDimensionsFIS().widthFIS})</div>
+                  <div>Thickness: {boardThicknessInches.toFixed(2)} inches ({getBoardDimensionsFIS().thicknessFIS})</div>
+                  <div>Length: {boardLengthInches.toFixed(2)} inches / {(boardLengthInches / 12).toFixed(1)} feet ({getBoardDimensionsFIS().lengthFIS})</div>
+                </div>
+                <div className="text-sm text-gray-600 mb-4">
+                  <p><strong>Coordinate System:</strong> Origin (0,0) is at the bottom-left corner of the board.</p>
+                  <p>X-axis runs horizontally (length).</p>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <BoardVisualization ref={boardRef} />
+                </div>
+              </div>
+            </div>
+            
+            <div className="w-full bg-white rounded shadow-md p-4">
+              <h2 className="text-lg font-semibold mb-2">Cut List</h2>
+              {cuts.length === 0 ? (
+                <p className="text-gray-500">No cuts added yet.</p>
+              ) : (
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border p-2 text-left">Cut #</th>
+                      <th className="border p-2 text-left">Start X (FIS)</th>
+                      <th className="border p-2 text-left">Start Y (FIS)</th>
+                      <th className="border p-2 text-left">End X (FIS)</th>
+                      <th className="border p-2 text-left">End Y (FIS)</th>
+                      <th className="border p-2 text-left">Angle</th>
+                      <th className="border p-2 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cuts.map((cut, index) => {
+                      const startXFIS = formatFIS(inchesToFIS(cut.startXInches));
+                      const startYFIS = formatFIS(inchesToFIS(cut.startYInches));
+                      const endXFIS = formatFIS(inchesToFIS(cut.endXInches));
+                      const endYFIS = formatFIS(inchesToFIS(cut.endYInches));
+                      return (
+                        <tr key={`cut-row-${index}`}>
+                          <td className="border p-2">{index + 1}</td>
+                          <td className="border p-2">{startXFIS}</td>
+                          <td className="border p-2">{startYFIS}</td>
+                          <td className="border p-2">{endXFIS}</td>
+                          <td className="border p-2">{endYFIS}</td>
+                          <td className="border p-2">{cut.angle}°</td>
+                          <td className="border p-2 text-center">
+                            <button 
+                              onClick={() => removeCut(index)} 
+                              className="delete-btn"
+                              title="Remove this cut"
+                            >
+                              Delete
+                            </button>
+                            <button
+                              onClick={() => copySingleCutURL(cut)}
+                              className="copy-url-btn"
+                              title="Copy URL for just this cut"
+                            >
+                              Copy URL
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+          
+          {/* Print View Modal */}
+          <PrintViewModal />
+          
+          {/* Print-only content */}
+          <PrintOnlyContent />
+        </>
+      );
+    };
+    
+    const App = () => <LumberCutVisualizer />;
+    
+    ReactDOM.render(<App />, document.getElementById('app'));
+  </script>
+</body>
+</html>
