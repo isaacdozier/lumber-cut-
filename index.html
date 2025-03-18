@@ -270,8 +270,7 @@
               
               // Validate values with the current board dimensions
               if (startXInches >= 0 && startXInches <= maxBoardLength &&
-                  startYInches >= 0 && startYInches <= maxBoardWidth &&
-                  cutAngle >= 0 && cutAngle <= 180) {
+                  startYInches >= 0 && startYInches <= maxBoardWidth) {
                 
                 // Calculate the cut endpoint based on the board dimensions
                 const cutPosition = calculateCutEndpoint(
@@ -380,14 +379,14 @@
       
       // Calculate where a cut will intersect with the board edges
       const calculateCutEndpoint = (startXInches, startYInches, angle, maxLength = boardLengthInches, maxWidth = boardWidthInches) => {
-        // Convert angle to radians
+        // Convert angle to radians - handle negative angles properly
         const radians = (angle * Math.PI) / 180;
         
         // Initialize end point coordinates
         let endXInches, endYInches;
         
-        // For vertical cuts (90 degrees)
-        if (angle === 90) {
+        // For vertical cuts (90 degrees or -270 degrees)
+        if (angle === 90 || angle === -270) {
           return {
             x: startXInches,
             y: startYInches,
@@ -401,8 +400,23 @@
           };
         }
         
-        // For horizontal cuts (0 or 180 degrees)
-        if (angle === 0) {
+        // For vertical cuts (-90 degrees or 270 degrees)
+        if (angle === -90 || angle === 270) {
+          return {
+            x: startXInches,
+            y: startYInches,
+            endX: startXInches,
+            endY: 0,
+            startXInches,
+            startYInches,
+            endXInches: startXInches,
+            endYInches: 0,
+            angle
+          };
+        }
+        
+        // For horizontal cuts (0 or 180 degrees or their equivalents)
+        if (angle === 0 || angle === -0 || angle === 360 || angle === -360) {
           return {
             x: startXInches,
             y: startYInches,
@@ -416,7 +430,7 @@
           };
         }
         
-        if (angle === 180) {
+        if (angle === 180 || angle === -180) {
           return {
             x: startXInches,
             y: startYInches,
@@ -430,50 +444,96 @@
           };
         }
         
-        // For angled cuts, we need to check which edge the cut intersects first
+        // For angled cuts, calculate the slope and determine the first intersection with a board edge
         
         // Calculate potential intersections with all four edges
+        let intersections = [];
+        
         // Top edge (y = maxWidth)
-        const topDeltaX = (maxWidth - startYInches) / Math.tan(radians);
-        const topX = startXInches + topDeltaX;
+        if (Math.abs(Math.tan(radians)) > 0.0001) { // Avoid division by very small numbers (nearly horizontal lines)
+          const topDeltaX = (maxWidth - startYInches) / Math.tan(radians);
+          const topX = startXInches + topDeltaX;
+          if (topX >= 0 && topX <= maxLength) {
+            intersections.push({
+              x: topX,
+              y: maxWidth,
+              distance: Math.sqrt(Math.pow(topX - startXInches, 2) + Math.pow(maxWidth - startYInches, 2)),
+              edge: 'top'
+            });
+          }
+        }
         
         // Bottom edge (y = 0)
-        const bottomDeltaX = -startYInches / Math.tan(radians);
-        const bottomX = startXInches + bottomDeltaX;
+        if (Math.abs(Math.tan(radians)) > 0.0001) { // Avoid division by very small numbers
+          const bottomDeltaX = -startYInches / Math.tan(radians);
+          const bottomX = startXInches + bottomDeltaX;
+          if (bottomX >= 0 && bottomX <= maxLength) {
+            intersections.push({
+              x: bottomX,
+              y: 0,
+              distance: Math.sqrt(Math.pow(bottomX - startXInches, 2) + Math.pow(startYInches, 2)),
+              edge: 'bottom'
+            });
+          }
+        }
         
         // Right edge (x = maxLength)
         const rightDeltaY = (maxLength - startXInches) * Math.tan(radians);
         const rightY = startYInches + rightDeltaY;
+        if (rightY >= 0 && rightY <= maxWidth) {
+          intersections.push({
+            x: maxLength,
+            y: rightY,
+            distance: Math.sqrt(Math.pow(maxLength - startXInches, 2) + Math.pow(rightY - startYInches, 2)),
+            edge: 'right'
+          });
+        }
         
         // Left edge (x = 0)
         const leftDeltaY = -startXInches * Math.tan(radians);
         const leftY = startYInches + leftDeltaY;
+        if (leftY >= 0 && leftY <= maxWidth) {
+          intersections.push({
+            x: 0,
+            y: leftY,
+            distance: Math.sqrt(Math.pow(startXInches, 2) + Math.pow(leftY - startYInches, 2)),
+            edge: 'left'
+          });
+        }
         
-        // Determine which intersection point is valid and comes first
-        // Check if the cut intersects the top edge
-        if (topX >= 0 && topX <= maxLength && angle < 180 && angle > 0) {
-          endXInches = topX;
-          endYInches = maxWidth;
-        }
-        // Check if the cut intersects the bottom edge
-        else if (bottomX >= 0 && bottomX <= maxLength && (angle > 180 || angle < 0)) {
-          endXInches = bottomX;
-          endYInches = 0;
-        }
-        // Check if the cut intersects the right edge
-        else if (rightY >= 0 && rightY <= maxWidth && ((angle < 90 && angle > 0) || (angle > 270 && angle < 360))) {
-          endXInches = maxLength;
-          endYInches = rightY;
-        }
-        // Check if the cut intersects the left edge
-        else if (leftY >= 0 && leftY <= maxWidth && (angle > 90 && angle < 270)) {
-          endXInches = 0;
-          endYInches = leftY;
-        }
-        // If no valid intersection, default to board corner (shouldn't happen with valid inputs)
-        else {
-          endXInches = maxLength;
-          endYInches = maxWidth;
+        // The line extends in both directions from the start point.
+        // For visualizing a cut, we need to select the intersection that is in the direction of the angle.
+        
+        // If we have the angle, we know which direction the cut should go
+        let dx = Math.cos(radians);
+        let dy = Math.sin(radians);
+        
+        // Find intersections that are in the direction of the angle
+        const validIntersections = intersections.filter(intersection => {
+          const vectorX = intersection.x - startXInches;
+          const vectorY = intersection.y - startYInches;
+          // Check if the direction to the intersection matches the angle's direction (dot product > 0)
+          return (vectorX * dx + vectorY * dy) > 0;
+        });
+        
+        if (validIntersections.length > 0) {
+          // Find the closest valid intersection
+          const closestIntersection = validIntersections.reduce(
+            (closest, current) => (current.distance < closest.distance ? current : closest),
+            validIntersections[0]
+          );
+          
+          endXInches = closestIntersection.x;
+          endYInches = closestIntersection.y;
+        } else {
+          // If no valid intersections found, use default values
+          // Could happen if the angle points directly away from the board
+          endXInches = startXInches + Math.cos(radians) * maxLength; // Just extend in angle direction
+          endYInches = startYInches + Math.sin(radians) * maxWidth;
+          
+          // Clamp to board edges
+          endXInches = Math.max(0, Math.min(maxLength, endXInches));
+          endYInches = Math.max(0, Math.min(maxWidth, endYInches));
         }
         
         return {
@@ -1137,7 +1197,7 @@
                     onChange={(e) => setAngle(parseFloat(e.target.value))}
                     className="w-full px-3 py-2 border rounded"
                     step="1"
-                    min="0"
+                    min="-180"
                     max="180"
                   />
                 </div>
